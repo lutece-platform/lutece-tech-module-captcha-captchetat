@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <properties>
+        <title>Module Captcha CaptchEtat</title>
+    </properties>
+    <body>
+        <section name="Module Captcha CaptchEtat">
+            <p>
+                Ce module intègre le service officiel <strong>CaptchEtat</strong> (API PISTE) dans Lutece.
+                Il permet de remplacer le captcha par défaut de Lutece pour une solution plus sécurisée et accessible.
+            </p>
+            <subsection name="Fonctionnalités">
+                <ul>
+                    <li>Génération de captcha visuel via l'API PISTE.</li>
+                    <li>Support du captcha audio pour l'accessibilité.</li>
+                    <li>Validation de la réponse utilisateur côté serveur.</li>
+                    <li>Gestion de l'authentification OAuth2 (Client Credentials) requise par PISTE.</li>
+                </ul>
+            </subsection>
+        </section>
+
+        <section name="Configuration">
+            <p>
+                Vous devez configurer les clés API fournies par la plateforme PISTE dans le fichier
+                <code>WEB-INF/conf/plugins/captchetat.properties</code>.
+            </p>
+
+            <p><code># PISTE API Configuration</code></p>
+            <p><code>captchetat.api.url=https://sandbox-api.piste.gouv.fr/piste/captchetat/v2</code></p>
+            <p><code># OAuth2 Authentication (PISTE)</code></p>
+            <p><code>captchetat.security.token.url=https://sandbox-oauth.piste.gouv.fr/api/oauth/token</code></p>
+            <p><code>captchetat.security.client_id=VOTRE_CLIENT_ID</code></p>
+            <p><code>captchetat.security.client_secret=VOTRE_CLIENT_SECRET</code></p>
+
+        </section>
+
+        <section name="Activation (Datastore)">
+            <p>
+                Ce module est un fournisseur (provider) pour le plugin <strong>Captcha</strong>.
+                Pour l'activer, vous ne devez pas modifier les fichiers properties, mais utiliser le <strong>Datastore</strong>.
+            </p>
+            <p>
+                Dans le Back Office, allez dans <strong>Système > Gestion des propriétés (Datastore)</strong> et définissez la clé suivante :
+            </p>
+            <ul>
+                <li><strong>Clé :</strong> <code>captcha.defaultProvider</code></li>
+                <li><strong>Valeur :</strong> <code>captchetat</code></li>
+            </ul>
+            <p>
+                Si la clé n'existe pas, vous pouvez la créer. Une fois définie, tous les captchas standards de Lutece utiliseront CaptchEtat.
+            </p>
+        </section>
+    </body>
+</document>
