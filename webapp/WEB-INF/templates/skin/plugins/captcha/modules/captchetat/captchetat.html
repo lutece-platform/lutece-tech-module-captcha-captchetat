@@ -1,0 +1,109 @@
+<@input type='hidden' id='captchetat_uuid' name='captchetat_uuid' value=captchetat_uuid! />
+
+<@cField label='#i18n{module.captcha.captchetat.message.response}' for='captchetat_answer' required=true>
+
+    <@cRow>
+        <@cCol>
+            <@cText class="form-text text-muted">#i18n{module.captcha.captchetat.message.title}</@cText>
+        </@cCol>
+    </@cRow>
+
+    <@cRow class='align-items-center g-1 mb-3'>
+
+        <@cCol class='col-auto position-relative'>
+            <#if captchetat_image_data??>
+                <@cImg id='captchetat_image_display' src='${captchetat_image_data}' alt='Captcha Visuel' class='img-thumbnail m-0' />
+            <#else>
+                <@cAlert class='danger'>#i18n{module.captcha.captchetat.error.loading}</@cAlert>
+            </#if>
+            <@parisIcon name='loader'
+            class='text-primary position-absolute top-50 start-50 translate-middle d-none fa-spin'
+            params='id="captcha_loading_spinner" style="font-size: 2rem;"' />
+        </@cCol>
+
+        <@cCol class='col-auto d-flex flex-column justify-content-center gap-1'>
+
+            <#if captchetat_sound_data??>
+                <audio id="captchetat_audio_player" src="${captchetat_sound_data}" class="d-none"></audio>
+                <@cBtn class='secondary btn-sm py-0 px-2' params='onclick="event.preventDefault(); document.getElementById(\'captchetat_audio_player\').play();"' label=''>
+                    <@parisIcon name='volume' />
+                </@cBtn>
+            </#if>
+
+            <@cBtn class='primary btn-sm py-0 px-2' params='onclick="refreshCaptchaAsync();"' type="button" label=''>
+                <@parisIcon name='refresh' />
+            </@cBtn>
+
+        </@cCol>
+    </@cRow>
+
+    <@cRow>
+        <@cCol xs=12 sm=8 md=6>
+            <@cInput name='captchetat_answer' id='captchetat_answer' required=true params='autocomplete="off"' />
+        </@cCol>
+    </@cRow>
+
+    <@cRow>
+        <@cCol>
+            <@cText class="form-text text-error mt-1">
+                <@parisIcon name='alert-triangle' /> #i18n{module.captcha.captchetat.message.warning}
+            </@cText>
+        </@cCol>
+    </@cRow>
+
+</@cField>
+
+<script>
+    async function refreshCaptchaAsync() {
+        const imgElement = document.getElementById('captchetat_image_display');
+        const audioPlayer = document.getElementById('captchetat_audio_player');
+        const uuidInput = document.getElementById('captchetat_uuid');
+        const answerInput = document.getElementById('captchetat_answer');
+        const loader = document.getElementById('captcha_loading_spinner');
+
+        if(imgElement) imgElement.style.opacity = '0.3';
+        if(loader) loader.classList.remove('d-none');
+
+        try {
+            const response = await fetch('jsp/site/Portal.jsp?page=captchetat&action=refreshCaptcha', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) throw new Error('Erreur réseau' + response.status);
+
+            const dataResponse = await response.json();
+
+            if (dataResponse.error) {
+                console.error(dataResponse.error);
+                return;
+            }
+
+            if(uuidInput) uuidInput.value = dataResponse.uuid;
+
+            if(imgElement) {
+                imgElement.src = dataResponse.image;
+            }
+
+            if(audioPlayer) {
+                if(dataResponse.audio) {
+                    audioPlayer.src = dataResponse.audio;
+                    audioPlayer.load();
+                } else {
+                    audioPlayer.removeAttribute('src');
+                }
+            }
+
+            if(answerInput) answerInput.value = '';
+
+        } catch (error) {
+            console.error('Erreur lors du rechargement du captcha:', error);
+            alert('Erreur technique lors du chargement du captcha.');
+        } finally {
+            if(imgElement) imgElement.style.opacity = '1';
+            if(loader) loader.classList.add('d-none');
+        }
+    }
+</script>
