@@ -40,5 +40,11 @@
             <version>[4.0.0-SNAPSHOT,)</version>
         </dependency>
     </dependencies>
+    <scm>
+        <connection>scm:git:https://github.com/lutece-platform/lutece-tech-module-captcha-captchetat.git</connection>
+        <developerConnection>scm:git:https://github.com/lutece-platform/lutece-tech-module-captcha-captchetat.git</developerConnection>
+        <url>https://github.com/lutece-platform/lutece-tech-module-captcha-captchetat.git</url>
+        <tag>HEAD</tag>
+    </scm>
     
 </project>

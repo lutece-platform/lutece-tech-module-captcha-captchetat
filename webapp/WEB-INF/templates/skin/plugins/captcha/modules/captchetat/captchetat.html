@@ -25,7 +25,7 @@
 
             <#if captchetat_sound_data??>
                 <audio id="captchetat_audio_player" src="${captchetat_sound_data}" class="d-none"></audio>
-                <@cBtn class='secondary btn-sm py-0 px-2' params='onclick="event.preventDefault(); document.getElementById(\'captchetat_audio_player\').play();"' label=''>
+                <@cBtn class='secondary btn-sm py-0 px-2' params='onclick="playCaptchaAudio(event);"' label=''>
                     <@parisIcon name='volume' />
                 </@cBtn>
             </#if>
@@ -54,6 +54,25 @@
 </@cField>
 
 <script>
+    function playCaptchaAudio(event) {
+        if(event) event.preventDefault();
+
+        const audioPlayer = document.getElementById('captchetat_audio_player');
+
+        if (audioPlayer) {
+            audioPlayer.currentTime = 0;
+
+            const playPromise = audioPlayer.play();
+
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.error("Erreur lors de la lecture audio :", error);
+                });
+            }
+        } else {
+            console.error("Lecteur audio introuvable (ID: captchetat_audio_player)");
+        }
+    }
     async function refreshCaptchaAsync() {
         const imgElement = document.getElementById('captchetat_image_display');
         const audioPlayer = document.getElementById('captchetat_audio_player');

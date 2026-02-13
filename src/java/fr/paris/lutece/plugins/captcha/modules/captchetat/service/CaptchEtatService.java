@@ -125,7 +125,7 @@ public class CaptchEtatService implements ICaptchaEngine
                 String strImageB64 = strCaptchaResponse.path( IMAGEB_64 ).asText( );
 
                 data.setUuid( strUuid );
-                data.setImageBase64( PNG_BASE_64 + strImageB64 );
+                data.setImageBase64( strImageB64 );
 
                 String strUrlSound = buildCaptchaUrl( strApiBaseUrl, strContext, "sound", strUuid );
                 byte[] soundBytes = getCaptchaSound( httpClient, strUrlSound, strToken );
