@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><plug-in>
     <name>captchetat</name>
     <class>fr.paris.lutece.portal.service.plugin.PluginDefaultImplementation</class>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <description>module.captcha.captchetat.plugin.description</description>
     <provider>module.captcha.captchetat.plugin.provider</provider>
     <provider-url>http://lutece.paris.fr</provider-url>
