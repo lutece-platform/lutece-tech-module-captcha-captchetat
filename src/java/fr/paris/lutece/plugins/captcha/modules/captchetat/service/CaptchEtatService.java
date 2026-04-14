@@ -13,20 +13,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import fr.paris.lutece.util.httpaccess.HttpAccessService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.MediaType;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.io.entity.StringEntity;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -66,7 +64,6 @@ public class CaptchEtatService implements ICaptchaEngine
 
     private static final String PREFIX_BEARER = "Bearer ";
     private static final String MIME_TYPE_AUDIO_WAV_X_WAV = "audio/x-wav, audio/wav";
-    private static final String PNG_BASE_64 = "data:image/png;base64,";
     private static final String AUDIO_WAV_BASE_64 = "data:audio/wav;base64,";
 
     private static final String PARAMETER_UUID = "captchetat_uuid";
@@ -105,7 +102,6 @@ public class CaptchEtatService implements ICaptchaEngine
 
     public CaptchEtatData generateCaptchaData( )
     {
-        CloseableHttpClient httpClient = null;
         try
         {
             String strToken = getAccessToken( );
@@ -113,10 +109,8 @@ public class CaptchEtatService implements ICaptchaEngine
                     AppPropertiesService.getProperty( PROPERTY_PATH_ENDPOINT, DEFAULT_PATH_ENDPOINT );
             String strContext = AppPropertiesService.getProperty( PROPERTY_CAPTCHA_CONTEXT, DEFAULT_CAPTCHA_CONTEXT );
 
-            httpClient = HttpClients.createDefault( );
-
             String strUrlImg = buildCaptchaUrl( strApiBaseUrl, strContext, "image", null );
-            JsonNode strCaptchaResponse = getCaptchaIMG( httpClient, strUrlImg, strToken );
+            JsonNode strCaptchaResponse = getCaptchaIMG( strUrlImg, strToken );
 
             if ( strCaptchaResponse != null )
             {
@@ -128,9 +122,9 @@ public class CaptchEtatService implements ICaptchaEngine
                 data.setImageBase64( strImageB64 );
 
                 String strUrlSound = buildCaptchaUrl( strApiBaseUrl, strContext, "sound", strUuid );
-                byte[] soundBytes = getCaptchaSound( httpClient, strUrlSound, strToken );
+                byte[] soundBytes = getCaptchaSound( strUrlSound, strToken );
 
-                if ( soundBytes != null )
+                if ( soundBytes != null && soundBytes.length > 0 )
                 {
                     String strSoundB64 = Base64.getEncoder( ).encodeToString( soundBytes );
                     data.setAudioBase64( AUDIO_WAV_BASE_64 + strSoundB64 );
@@ -142,10 +136,6 @@ public class CaptchEtatService implements ICaptchaEngine
         catch ( Exception e )
         {
             AppLogService.error( "CaptchEtat: Technical error during data generation", e );
-        }
-        finally
-        {
-            closeResources( httpClient, null );
         }
 
         return null;
@@ -192,20 +182,20 @@ public class CaptchEtatService implements ICaptchaEngine
         return sbUrl.toString( );
     }
 
-    private JsonNode getCaptchaIMG( CloseableHttpClient client, String strUrl, String strToken )
+    private JsonNode getCaptchaIMG( String strUrl, String strToken )
     {
-        HttpGet httpGet = new HttpGet( strUrl );
-        httpGet.setHeader( HttpHeaders.AUTHORIZATION, PREFIX_BEARER + strToken );
-        httpGet.setHeader( HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON );
+        HttpAccess httpAccess = new HttpAccess( );
+        Map<String, String> headers = new HashMap<>( );
+        headers.put( HttpHeaders.AUTHORIZATION, PREFIX_BEARER + strToken );
+        headers.put( HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON );
 
-        try ( CloseableHttpResponse response = client.execute( httpGet ) )
+        try
         {
-            if ( response.getCode( ) == HttpStatus.SC_OK )
+            String strResponseJson = httpAccess.doGet( strUrl, null, null, headers );
+            if ( strResponseJson != null )
             {
-                String strResponseJson = EntityUtils.toString( response.getEntity( ), StandardCharsets.UTF_8 );
                 return new ObjectMapper( ).readTree( strResponseJson );
             }
-            AppLogService.error( "CaptchEtat: HTTP Image Error: " + response.getCode( ) );
         }
         catch( Exception e )
         {
@@ -214,13 +204,15 @@ public class CaptchEtatService implements ICaptchaEngine
         return null;
     }
 
-    private byte[] getCaptchaSound( CloseableHttpClient client, String strUrl, String strToken )
+    private byte[] getCaptchaSound( String strUrl, String strToken )
     {
         HttpGet httpGet = new HttpGet( strUrl );
         httpGet.setHeader( HttpHeaders.AUTHORIZATION, PREFIX_BEARER + strToken );
         httpGet.setHeader( HttpHeaders.ACCEPT, MIME_TYPE_AUDIO_WAV_X_WAV );
 
-        try ( CloseableHttpResponse response = client.execute( httpGet ) )
+        CloseableHttpClient httpClient = HttpAccessService.getInstance( ).getHttpClient( );
+
+        try ( CloseableHttpResponse response = httpClient.execute( httpGet ) )
         {
             if ( response.getCode( ) == HttpStatus.SC_OK )
             {
@@ -228,7 +220,7 @@ public class CaptchEtatService implements ICaptchaEngine
             }
             AppLogService.error( "CaptchEtat: HTTP Audio Error: " + response.getCode( ) );
         }
-        catch( Exception e )
+        catch ( Exception e )
         {
             AppLogService.error( "CaptchEtat: Audio call error", e );
         }
@@ -277,9 +269,6 @@ public class CaptchEtatService implements ICaptchaEngine
             return false;
         }
 
-        CloseableHttpClient httpClient = null;
-        CloseableHttpResponse response = null;
-
         try
         {
             String strToken = getAccessToken( );
@@ -293,56 +282,23 @@ public class CaptchEtatService implements ICaptchaEngine
             jsonNode.put( CODE, strCode );
             String strJsonBody = mapper.writeValueAsString( jsonNode );
 
-            httpClient = HttpClients.createDefault( );
-            HttpPost httpPost = new HttpPost( strUrl );
+            HttpAccess httpAccess = new HttpAccess( );
+            Map<String, String> headers = new HashMap<>( );
+            headers.put( HttpHeaders.AUTHORIZATION, PREFIX_BEARER + strToken );
+            headers.put( HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON );
 
-            httpPost.setHeader( HttpHeaders.AUTHORIZATION, PREFIX_BEARER + strToken );
-            httpPost.setHeader( HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON );
+            String strResponse = httpAccess.doPostJSON( strUrl, strJsonBody, headers, null );
 
-            StringEntity entity = new StringEntity( strJsonBody, StandardCharsets.UTF_8 );
-            httpPost.setEntity( entity );
-
-            response = httpClient.execute( httpPost );
-            int statusCode = response.getCode( );
-
-            if ( statusCode == HttpStatus.SC_OK )
+            if ( strResponse != null )
             {
-                String strResponse = EntityUtils.toString( response.getEntity( ), StandardCharsets.UTF_8 );
                 return "true".equalsIgnoreCase( strResponse.trim( ) ) || strResponse.contains( "\"success\":true" );
-            }
-            else
-            {
-                AppLogService.error( "CaptchEtat validation failed. HTTP Status: " + statusCode );
             }
         }
         catch( Exception e )
         {
             AppLogService.error( "Unexpected error during CaptchEtat validation", e );
         }
-        finally
-        {
-            closeResources( httpClient, response );
-        }
 
         return false;
-    }
-
-    private void closeResources( CloseableHttpClient client, CloseableHttpResponse response )
-    {
-        try
-        {
-            if ( response != null )
-            {
-                response.close( );
-            }
-            if ( client != null )
-            {
-                client.close( );
-            }
-        }
-        catch( Exception e )
-        {
-            AppLogService.error( "Error closing HTTP resources: " + e.getMessage( ) );
-        }
     }
 }
