@@ -11,7 +11,7 @@
         </@cCol>
         <@cCol>
             <#if captchetat_sound_data??><audio id="captchetat_audio_player" src="${captchetat_sound_data}" class="d-none"></audio></#if>
-            <@cBtnGroup>
+            <@cBtnGroup label=''>
             <#if captchetat_sound_data??>
                 <@cBtn class='secondary' params='onclick="playCaptchaAudio(event);"' label=''>
                     <@parisIcon name='volume' />
