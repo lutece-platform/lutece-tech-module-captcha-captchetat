@@ -7,17 +7,17 @@
             <#else>
                 <@cAlert class='danger'>#i18n{module.captcha.captchetat.error.loading}</@cAlert>
             </#if>
-            <@cIcon name='loader-2' class='text-primary position-absolute top-50 start-50 translate-middle d-none' id='captcha_loading_spinner' params='style="font-size: 2rem;"' />
+            <@cIcon name='loader-2' class='text-primary position-absolute top-50 start-50 translate-middle d-none fs-2' id='captcha_loading_spinner' />
         </@cCol>
         <@cCol>
             <#if captchetat_sound_data??><audio id="captchetat_audio_player" src="${captchetat_sound_data}" class="d-none"></audio></#if>
             <@cBtnGroup label=''>
             <#if captchetat_sound_data??>
-                <@cBtn class='secondary' params='onclick="playCaptchaAudio(event);"' label=''>
+                <@cBtn class='secondary' params={ 'data-captchetat-action': 'play-audio' } label=''>
                     <@cIcon name='volume' />
                 </@cBtn>
             </#if>
-                <@cBtn class='primary' params='onclick="refreshCaptchaAsync();"' type="button" label=''>
+                <@cBtn class='primary' params={ 'data-captchetat-action': 'refresh' } type="button" label=''>
                     <@cIcon name='refresh' />
                 </@cBtn>
             </@cBtnGroup>
@@ -25,7 +25,7 @@
     </@cRow>
     <@cRow>
         <@cCol cols='12 col-sm-8 col-md-6'>
-            <@cInput name='captchetat_answer' id='captchetat_answer' required=true params='autocomplete="off"' helpMsg='#i18n{module.captcha.captchetat.message.response}' />
+            <@cInput name='captchetat_answer' id='captchetat_answer' required=true autocomplete="off" helpMsg='#i18n{module.captcha.captchetat.message.response}' />
         </@cCol>
     </@cRow>
 </@cField>
@@ -98,4 +98,13 @@ async function refreshCaptchaAsync() {
         if(loader) loader.classList.add('d-none');
     }
 }
+
+document.querySelectorAll('[data-captchetat-action="play-audio"]').forEach(function (button) {
+    button.addEventListener('click', playCaptchaAudio);
+});
+document.querySelectorAll('[data-captchetat-action="refresh"]').forEach(function (button) {
+    button.addEventListener('click', function () {
+        refreshCaptchaAsync();
+    });
+});
 </script>
