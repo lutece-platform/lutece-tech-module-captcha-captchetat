@@ -39,6 +39,12 @@
             <artifactId>library-httpaccess</artifactId>
             <version>[4.0.0,)</version>
         </dependency>
+        <dependency>
+            <groupId>fr.paris.lutece.plugins</groupId>
+            <artifactId>library-lutece-unit-testing</artifactId>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <scm>
         <connection>scm:git:https://github.com/lutece-platform/lutece-tech-module-captcha-captchetat.git</connection>
