@@ -141,6 +141,17 @@ public class CaptchEtatService implements ICaptchaEngine
         return null;
     }
 
+    /**
+     * Renders the captcha form fields with the CaptchEtat template.
+     * <p>
+     * The returned string is HTML rendered by the application from its template, every value escaped there. Under the
+     * always-on HTML auto-escaping of FreeMarker (LUT-33153), a String put in a model prints as text: the consumer that
+     * puts it in its model wraps it with {@code HtmlMarkup.of( strHtml )} and writes it {@code ${captcha}}, never with
+     * {@code ?no_esc}.
+     * </p>
+     *
+     * @return the HTML of the captcha, to be wrapped with {@code HtmlMarkup.of} by the consumer
+     */
     @Override
     public String getHtmlCode( )
     {
