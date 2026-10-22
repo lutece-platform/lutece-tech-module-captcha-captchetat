@@ -3,7 +3,7 @@ package fr.paris.lutece.plugins.captcha.modules.captchetat.web;
 import fr.paris.lutece.plugins.captcha.modules.captchetat.business.CaptchEtatData;
 import fr.paris.lutece.plugins.captcha.modules.captchetat.service.CaptchEtatService;
 import fr.paris.lutece.portal.service.util.AppLogService;
-import fr.paris.lutece.portal.util.mvc.commons.annotations.Action;
+import fr.paris.lutece.portal.util.mvc.commons.annotations.View;
 import fr.paris.lutece.portal.util.mvc.xpage.MVCApplication;
 import fr.paris.lutece.portal.util.mvc.xpage.annotations.Controller;
 import fr.paris.lutece.portal.web.xpages.XPage;
@@ -26,12 +26,19 @@ public class CaptchEtatXPage extends MVCApplication
 {
     private static final long serialVersionUID = 1L;
 
-    private static final String ACTION_REFRESH_CAPTCHA = "refreshCaptcha";
+    private static final String VIEW_REFRESH_CAPTCHA = "refreshCaptcha";
 
     @Inject
     private CaptchEtatService _captchEtatService;
 
-    @Action( ACTION_REFRESH_CAPTCHA )
+    /**
+     * Generates a new captcha, read by the "new captcha" button of the captcha field: a read view, so that it is requested by GET
+     *
+     * @param request
+     *            the HTTP request
+     * @return the JSON of the captcha (uuid, image, audio) or of the error
+     */
+    @View( VIEW_REFRESH_CAPTCHA )
     public XPage refreshCaptcha( HttpServletRequest request )
     {
         try

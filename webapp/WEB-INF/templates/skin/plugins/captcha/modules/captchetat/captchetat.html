@@ -57,7 +57,7 @@ async function refreshCaptchaAsync() {
     if(loader) loader.classList.remove('d-none');
 
     try {
-        const response = await fetch('jsp/site/Portal.jsp?page=captchetat&action=refreshCaptcha', {
+        const response = await fetch('jsp/site/Portal.jsp?page=captchetat&view=refreshCaptcha', {
             method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
