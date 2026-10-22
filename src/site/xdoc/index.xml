@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document>
+    <properties>
+        <title>Module Captcha CaptchEtat</title>
+    </properties>
+    <body>
+        <section name="Module Captcha CaptchEtat">
+            <p>
+                This module integrates the French State's <strong>CaptchEtat</strong> service (via PISTE API) into Lutece.
+                It replaces the default Lutece captcha to provide a more accessible and secure solution.
+            </p>
+            <subsection name="Features">
+                <ul>
+                    <li>Standard visual captcha generation via PISTE API.</li>
+                    <li>Audio captcha support for accessibility.</li>
+                    <li>Server-side validation of the answer.</li>
+                    <li>OAuth2 Authentication (Client Credentials) handling for PISTE security.</li>
+                </ul>
+            </subsection>
+        </section>
+
+        <section name="Configuration">
+            <p>
+                You must configure the API keys provided by the PISTE platform in the file
+                <code>WEB-INF/conf/plugins/captchetat.properties</code>.
+            </p>
+            <p><code># PISTE API Configuration</code></p>
+            <p><code>captchetat.api.url=https://sandbox-api.piste.gouv.fr/piste/captchetat/v2</code></p>
+            <p><code># OAuth2 Authentication (PISTE)</code></p>
+            <p><code>captchetat.security.token.url=https://sandbox-oauth.piste.gouv.fr/api/oauth/token</code></p>
+            <p><code>captchetat.security.client_id=VOTRE_CLIENT_ID</code></p>
+            <p><code>captchetat.security.client_secret=VOTRE_CLIENT_SECRET</code></p>
+        </section>
+
+        <section name="Activation (Datastore)">
+            <p>
+                This module acts as a provider for the <strong>Captcha</strong> plugin.
+                To enable it, you must configure the default provider in the <strong>Datastore</strong> (do not modify properties files directly).
+            </p>
+            <p>
+                In the Back Office, go to <strong>System > Properties Management (Datastore)</strong> and set the following key:
+            </p>
+            <ul>
+                <li><strong>Key:</strong> <code>captcha.defaultProvider</code></li>
+                <li><strong>Value:</strong> <code>captchetat</code></li>
+            </ul>
+            <p>
+                If the key does not exist, create it. Once set, all standard Lutece captchas will switch to CaptchEtat.
+            </p>
+        </section>
+    </body>
+</document>
