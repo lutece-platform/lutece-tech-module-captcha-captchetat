@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Module Captcha CaptchEtat">
+    <body>
+        <menu name="Module Captcha CaptchEtat">
+            <item name="Introduction" href="index.html"/>
+        </menu>
+        <menu ref="reports" />
+    </body>
+</project>

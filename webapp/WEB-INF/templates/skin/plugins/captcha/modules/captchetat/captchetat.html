@@ -1,0 +1,101 @@
+<input type="hidden" id="captchetat_uuid" name="captchetat_uuid" value="${captchetat_uuid!}" />
+<label class="form-label" for="captchetat_answer">#i18n{module.captcha.captchetat.message.response} *</label>
+<div class="row align-items-center">
+    <div class="col-auto">
+        <#if captchetat_image_data??>
+            <img id="captchetat_image_display" src="${captchetat_image_data}" alt="Captcha Visuel" class="img-thumbnail m-0" />
+        <#else>
+            <div class="alert alert-danger" role="alert">#i18n{module.captcha.captchetat.error.loading}</div>
+        </#if>
+        <i class="ti ti-loader text-primary position-absolute top-50 start-50 translate-middle d-none fa-spin" id="captcha_loading_spinner" style="font-size: 2rem;"></i>
+    </div>
+    <div class="col">
+        <#if captchetat_sound_data??><audio id="captchetat_audio_player" src="${captchetat_sound_data}" class="d-none"></audio></#if>
+        <div class="btn-group" role="group" aria-label="">
+        <#if captchetat_sound_data??>
+            <button class="btn btn-secondary" type="submit" onclick="playCaptchaAudio(event);">
+                <i class="ti ti-volume"></i>
+            </button>
+        </#if>
+            <button class="btn btn-primary" type="button" onclick="refreshCaptchaAsync();">
+                <i class="ti ti-refresh"></i>
+            </button>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12 col-sm-8 col-md-6">
+        <input type="text" class="form-control" name="captchetat_answer" id="captchetat_answer" value="" autocomplete="off" aria-required="true" aria-describedby="help_captchetat_answer" />
+        <p class="form-text" id="help_captchetat_answer">#i18n{module.captcha.captchetat.message.response}</p>
+    </div>
+</div>
+<script>
+function playCaptchaAudio(event) {
+    if(event) event.preventDefault();
+    const audioPlayer = document.getElementById('captchetat_audio_player');
+    if (audioPlayer) {
+        audioPlayer.currentTime = 0;
+        const playPromise = audioPlayer.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.error("Erreur lors de la lecture audio :", error);
+            });
+        }
+    } else {
+        console.error("Lecteur audio introuvable (ID: captchetat_audio_player)");
+    }
+}
+
+async function refreshCaptchaAsync() {
+    const imgElement = document.getElementById('captchetat_image_display');
+    const audioPlayer = document.getElementById('captchetat_audio_player');
+    const uuidInput = document.getElementById('captchetat_uuid');
+    const answerInput = document.getElementById('captchetat_answer');
+    const loader = document.getElementById('captcha_loading_spinner');
+
+    if(imgElement) imgElement.style.opacity = '0.3';
+    if(loader) loader.classList.remove('d-none');
+
+    try {
+        const response = await fetch('jsp/site/Portal.jsp?page=captchetat&action=refreshCaptcha', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) throw new Error('Erreur réseau' + response.status);
+
+        const dataResponse = await response.json();
+
+        if (dataResponse.error) {
+            console.error(dataResponse.error);
+            return;
+        }
+
+        if(uuidInput) uuidInput.value = dataResponse.uuid;
+
+        if(imgElement) {
+            imgElement.src = dataResponse.image;
+        }
+
+        if(audioPlayer) {
+            if(dataResponse.audio) {
+                audioPlayer.src = dataResponse.audio;
+                audioPlayer.load();
+            } else {
+                audioPlayer.removeAttribute('src');
+            }
+        }
+
+        if(answerInput) answerInput.value = '';
+
+    } catch (error) {
+        console.error('Erreur lors du rechargement du captcha:', error);
+        alert('Erreur technique lors du chargement du captcha.');
+    } finally {
+        if(imgElement) imgElement.style.opacity = '1';
+        if(loader) loader.classList.add('d-none');
+    }
+}
+</script>
