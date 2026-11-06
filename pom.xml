@@ -10,7 +10,7 @@
     <groupId>fr.paris.lutece.plugins</groupId>
     <artifactId>module-captcha-captchetat</artifactId>
     <packaging>lutece-plugin</packaging>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2-beta-01</version>
     <name>Lutece captcha CaptchEtat module</name>
     
     <repositories>
