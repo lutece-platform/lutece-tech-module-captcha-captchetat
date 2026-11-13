@@ -5,6 +5,8 @@ import fr.paris.lutece.plugins.captcha.service.ICaptchaEngine;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppLogService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
+import fr.paris.lutece.portal.web.LocalVariables;
+import fr.paris.lutece.portal.web.l10n.LocaleService;
 import fr.paris.lutece.util.html.HtmlTemplate;
 import fr.paris.lutece.util.httpaccess.HttpAccess;
 import fr.paris.lutece.util.httpaccess.HttpAccessException;
@@ -30,7 +32,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 @Named( "captchEtatService" )
@@ -174,7 +175,8 @@ public class CaptchEtatService implements ICaptchaEngine
             AppLogService.error( "CaptchEtat: Failed to load captcha data." );
         }
 
-        HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_CAPTCHA, Locale.getDefault( ), model );
+        // The language of the page the captcha is in (or of the site), not the one of the server
+        HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_CAPTCHA, LocaleService.getContextUserLocale( LocalVariables.getRequest( ) ), model );
         return template.getHtml( );
     }
 
